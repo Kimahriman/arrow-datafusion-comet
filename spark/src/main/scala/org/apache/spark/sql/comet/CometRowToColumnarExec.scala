@@ -100,6 +100,7 @@ case class CometRowToColumnarExec(child: SparkPlan)
 object CometRowToColumnarExec extends DataTypeSupport {
   override def isAdditionallySupported(dt: DataType): Boolean = dt match {
     case _: StructType => true
+    case _: ArrayType => true
     case _ => false
   }
 }
