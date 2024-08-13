@@ -2360,6 +2360,17 @@ object QueryPlanSerde extends Logging with ShimQueryPlanSerde with CometExprShim
             None
           }
 
+        case get @ GetArrayItem(child, ordinal, false) =>
+          val childExpr = exprToProto(child, inputs, binding)
+          val ordinalExpr = exprToProto(ordinal, inputs, binding)
+
+          if (childExpr.isDefined && ordinalExpr.isDefined) {
+            scalarExprToProtoWithReturnType("array_element", get.dataType, childExpr, ordinalExpr)
+          } else {
+            withInfo(expr, "unsupported arguments for GetArrayItem", child, ordinal)
+            None
+          }
+
         case _ =>
           withInfo(expr, s"${expr.prettyName} is not supported", expr.children: _*)
           None
