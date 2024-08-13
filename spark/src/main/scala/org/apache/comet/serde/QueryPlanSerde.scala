@@ -2360,7 +2360,7 @@ object QueryPlanSerde extends Logging with ShimQueryPlanSerde with CometExprShim
             None
           }
 
-        case get @ GetArrayItem(child, ordinal, false) =>
+        case get @ GetArrayItem(child, ordinal, _) =>
           val childExpr = exprToProto(child, inputs, binding)
           val ordinalExpr = exprToProto(ordinal, inputs, binding)
 
