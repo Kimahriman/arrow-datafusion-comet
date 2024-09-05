@@ -2094,4 +2094,26 @@ class CometExpressionSuite extends CometTestBase with AdaptiveSparkPlanHelper {
       }
     }
   }
+
+  test("array_issue") {
+    withSQLConf(CometConf.COMET_EXEC_SHUFFLE_ENABLED.key -> "true") {
+      withTempDir { dir =>
+        val path = new Path(dir.toURI.toString, "test.parquet")
+        spark.range(10).select(
+          col("id"),
+          array(struct(
+            lit("bob").alias("first"),
+            lit("jim").alias("middle"),
+            lit("joe").alias("last"),
+          ), lit(null)).alias("friends")
+        ).write.parquet(path.toString())
+
+        val df = spark.read.parquet(path.toString())
+        val ordered = df.select("friends.middle", "friends").orderBy("id")
+        ordered.explain()
+        ordered.show()
+        ordered.show()
+      }
+    }
+  }
 }
