@@ -2073,46 +2073,57 @@ class CometExpressionSuite extends CometTestBase with AdaptiveSparkPlanHelper {
   }
 
   test("CreateArray") {
-    Seq(true, false).foreach { dictionaryEnabled =>
-      withTempDir { dir =>
-        val path = new Path(dir.toURI.toString, "test.parquet")
-        makeParquetFileAllTypes(path, dictionaryEnabled = dictionaryEnabled, 10000)
-        val df = spark.read.parquet(path.toString)
-        checkSparkAnswerAndOperator(df.select(array(col("_2"), col("_3"), col("_4"))))
-        checkSparkAnswerAndOperator(df.select(array(col("_4"), col("_11"), lit(null))))
-        checkSparkAnswerAndOperator(
-          df.select(array(array(col("_4")), array(col("_4"), lit(null)))))
-        checkSparkAnswerAndOperator(df.select(array(col("_8"), col("_13"))))
-        // This ends up returning empty strings instead of nulls for the last element
-        // Fixed by https://github.com/apache/datafusion/commit/27304239ef79b50a443320791755bf74eed4a85d
-        // checkSparkAnswerAndOperator(df.select(array(col("_8"), col("_13"), lit(null))))
-        checkSparkAnswerAndOperator(df.select(array(array(col("_8")), array(col("_13")))))
-        checkSparkAnswerAndOperator(df.select(array(col("_8"), col("_8"), lit(null))))
-        checkSparkAnswerAndOperator(df.select(array(struct("_4"), struct("_4"))))
-      // Fixed by https://github.com/apache/datafusion/commit/140f7cec78febd73d3db537a816badaaf567530a
-      // checkSparkAnswerAndOperator(df.select(array(struct(col("_8").alias("a")), struct(col("_13").alias("a")))))
+    withSQLConf(
+      CometConf.COMET_EXEC_SHUFFLE_ENABLED.key -> "true",
+      CometConf.COMET_EXPLAIN_NATIVE_ENABLED.key -> "true") {
+      Seq(true, false).foreach { dictionaryEnabled =>
+        withTempDir { dir =>
+          val path = new Path(dir.toURI.toString, "test.parquet")
+          makeParquetFileAllTypes(path, dictionaryEnabled = dictionaryEnabled, 10000)
+          val df = spark.read.parquet(path.toString)
+          df.explain()
+          checkSparkAnswerAndOperator(df.select(array(col("_2"), col("_3"), col("_4"))))
+          checkSparkAnswerAndOperator(df.select(array(col("_4"), col("_11"), lit(null))))
+          checkSparkAnswerAndOperator(
+            df.select(array(array(col("_4")), array(col("_4"), lit(null)))))
+          checkSparkAnswerAndOperator(df.select(array(col("_8"), col("_13"))))
+          // This ends up returning empty strings instead of nulls for the last element
+          // Fixed by https://github.com/apache/datafusion/commit/27304239ef79b50a443320791755bf74eed4a85d
+          // checkSparkAnswerAndOperator(df.select(array(col("_8"), col("_13"), lit(null))))
+          checkSparkAnswerAndOperator(df.select(array(array(col("_8")), array(col("_13")))))
+          checkSparkAnswerAndOperator(df.select(array(col("_8"), col("_8"), lit(null))))
+          checkSparkAnswerAndOperator(df.select(array(struct("_4"), struct("_4"))))
+        // Fixed by https://github.com/apache/datafusion/commit/140f7cec78febd73d3db537a816badaaf567530a
+        // checkSparkAnswerAndOperator(df.select(array(struct(col("_8").alias("a")), struct(col("_13").alias("a")))))
+        }
       }
     }
   }
 
   test("array_issue") {
-    withSQLConf(CometConf.COMET_EXEC_SHUFFLE_ENABLED.key -> "true") {
+    withSQLConf(
+      CometConf.COMET_EXEC_SHUFFLE_ENABLED.key -> "true",
+      CometConf.COMET_EXPLAIN_NATIVE_ENABLED.key -> "true") {
       withTempDir { dir =>
         val path = new Path(dir.toURI.toString, "test.parquet")
-        spark.range(10).select(
-          col("id"),
-          array(struct(
-            lit("bob").alias("first"),
-            lit("jim").alias("middle"),
-            lit("joe").alias("last"),
-          ), lit(null)).alias("friends")
-        ).write.parquet(path.toString())
+        spark
+          .range(10)
+          .select(
+            col("id"),
+            array(
+              struct(
+                lit("bob").alias("first"),
+                lit("jim").alias("middle"),
+                lit("joe").alias("last")),
+              lit(null)).alias("friends"))
+          .write
+          .parquet(path.toString())
 
         val df = spark.read.parquet(path.toString())
         val ordered = df.select("friends.middle", "friends").orderBy("id")
         ordered.explain()
         ordered.show()
-        ordered.show()
+        println(ordered.collect())
       }
     }
   }
