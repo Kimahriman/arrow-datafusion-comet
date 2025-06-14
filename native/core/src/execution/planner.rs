@@ -105,10 +105,10 @@ use datafusion_comet_proto::{
 };
 use datafusion_comet_spark_expr::{
     ArrayInsert, Avg, AvgDecimal, Cast, CheckOverflow, Contains, Correlation, Covariance,
-    CreateNamedStruct, DateTruncExpr, EndsWith, GetArrayStructFields, GetStructField, HourExpr,
-    IfExpr, Like, ListExtract, MinuteExpr, NormalizeNaNAndZero, RLike, SecondExpr,
-    SparkCastOptions, StartsWith, Stddev, StringSpaceExpr, SubstringExpr, SumDecimal,
-    TimestampTruncExpr, ToJson, UnboundColumn, Variance,
+    CreateNamedStruct, DateTruncExpr, EndsWith, GetArrayStructFields, HourExpr, IfExpr, Like,
+    ListExtract, MinuteExpr, NormalizeNaNAndZero, RLike, SecondExpr, SparkCastOptions, StartsWith,
+    Stddev, StringSpaceExpr, SubstringExpr, SumDecimal, TimestampTruncExpr, ToJson, UnboundColumn,
+    Variance,
 };
 use datafusion_spark::function::math::expm1::SparkExpm1;
 use itertools::Itertools;
@@ -710,11 +710,6 @@ impl PhysicalPlanner {
                     .collect::<Result<Vec<_>, _>>()?;
                 let names = expr.names.clone();
                 Ok(Arc::new(CreateNamedStruct::new(values, names)))
-            }
-            ExprStruct::GetStructField(expr) => {
-                let child =
-                    self.create_expr(expr.child.as_ref().unwrap(), Arc::clone(&input_schema))?;
-                Ok(Arc::new(GetStructField::new(child, expr.ordinal as usize)))
             }
             ExprStruct::ToJson(expr) => {
                 let child = self.create_expr(expr.child.as_ref().unwrap(), input_schema)?;

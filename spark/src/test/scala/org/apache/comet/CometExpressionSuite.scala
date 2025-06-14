@@ -2210,7 +2210,7 @@ class CometExpressionSuite extends CometTestBase with AdaptiveSparkPlanHelper {
     }
   }
 
-  test("get_struct_field") {
+  test("GetStructField") {
     Seq("", "parquet").foreach { v1List =>
       withSQLConf(
         SQLConf.USE_V1_SOURCE_LIST.key -> v1List,
@@ -2239,7 +2239,7 @@ class CometExpressionSuite extends CometTestBase with AdaptiveSparkPlanHelper {
     }
   }
 
-  test("get_struct_field - select primitive fields") {
+  test("GetStructField - select primitive fields") {
     withTempPath { dir =>
       // create input file with Comet disabled
       withSQLConf(CometConf.COMET_ENABLED.key -> "false") {
@@ -2262,7 +2262,7 @@ class CometExpressionSuite extends CometTestBase with AdaptiveSparkPlanHelper {
     }
   }
 
-  test("get_struct_field - select subset of struct") {
+  test("GetStructField - select subset of struct") {
     withTempPath { dir =>
       // create input file with Comet disabled
       withSQLConf(CometConf.COMET_ENABLED.key -> "false") {
@@ -2298,7 +2298,7 @@ class CometExpressionSuite extends CometTestBase with AdaptiveSparkPlanHelper {
     }
   }
 
-  test("get_struct_field - read entire struct") {
+  test("GetStructField - read entire struct") {
     withTempPath { dir =>
       // create input file with Comet disabled
       withSQLConf(CometConf.COMET_ENABLED.key -> "false") {
@@ -2343,7 +2343,7 @@ class CometExpressionSuite extends CometTestBase with AdaptiveSparkPlanHelper {
     }
   }
 
-  testV1AndV2("get_struct_field with DataFusion ParquetExec - simple case") {
+  testV1AndV2("GetStructField with DataFusion ParquetExec - simple case") {
     withTempPath { dir =>
       // create input file with Comet disabled
       withSQLConf(CometConf.COMET_ENABLED.key -> "false") {
@@ -2367,7 +2367,7 @@ class CometExpressionSuite extends CometTestBase with AdaptiveSparkPlanHelper {
     }
   }
 
-  testV1AndV2("get_struct_field with DataFusion ParquetExec - select subset of struct") {
+  testV1AndV2("GetStructField with DataFusion ParquetExec - select subset of struct") {
     withTempPath { dir =>
       // create input file with Comet disabled
       withSQLConf(CometConf.COMET_ENABLED.key -> "false") {
@@ -2400,7 +2400,7 @@ class CometExpressionSuite extends CometTestBase with AdaptiveSparkPlanHelper {
     }
   }
 
-  test("get_struct_field with DataFusion ParquetExec - read entire struct") {
+  test("GetStructField with DataFusion ParquetExec - read entire struct") {
     assume(usingDataSourceExec(conf))
     withTempPath { dir =>
       // create input file with Comet disabled

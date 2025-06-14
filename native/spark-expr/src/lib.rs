@@ -26,7 +26,7 @@ mod static_invoke;
 pub use static_invoke::*;
 
 mod struct_funcs;
-pub use struct_funcs::{CreateNamedStruct, GetStructField};
+pub use struct_funcs::CreateNamedStruct;
 
 mod json_funcs;
 pub mod test_common;

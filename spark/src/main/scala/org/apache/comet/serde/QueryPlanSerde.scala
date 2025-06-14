@@ -1877,16 +1877,15 @@ object QueryPlanSerde extends Logging with CometExprShim {
         }
 
       case GetStructField(child, ordinal, _) =>
-        exprToProtoInternal(child, inputs, binding).map { childExpr =>
-          val getStructFieldBuilder = ExprOuterClass.GetStructField
-            .newBuilder()
-            .setChild(childExpr)
-            .setOrdinal(ordinal)
-
-          ExprOuterClass.Expr
-            .newBuilder()
-            .setGetStructField(getStructFieldBuilder)
-            .build()
+        val childExpr = exprToProtoInternal(child, inputs, binding)
+        if (childExpr.isDefined) {
+          val fieldName = child.dataType.asInstanceOf[StructType](ordinal).name
+          val fieldNameExpr =
+            exprToProtoInternal(Literal(fieldName), inputs, binding)
+          scalarFunctionExprToProto("get_field", childExpr, fieldNameExpr)
+        } else {
+          withInfo(expr, "unsupported arguments for GetStructField", child)
+          None
         }
 
       case CreateArray(children, _) =>
